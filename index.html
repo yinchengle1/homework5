@@ -1,0 +1,1999 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numerical Integration & Normal CDF</title>
+
+<style>
+:root {
+    --blue: #315fca;
+    --blue-dark: #1d397c;
+    --cyan: #40a8bd;
+    --ink: #1b2b47;
+    --muted: #718096;
+    --bg: #f3f6fc;
+    --border: #e3eaf4;
+    --white: #fff;
+    --green: #16876d;
+    --orange: #d8893a;
+    --shadow: 0 10px 30px rgba(35,60,110,.08);
+}
+
+* {
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", Arial, sans-serif;
+    line-height: 1.7;
+}
+
+header {
+    padding: 72px 24px 60px;
+    color: white;
+    background:
+        radial-gradient(circle at 85% 15%, #ffffff30, transparent 25%),
+        linear-gradient(120deg, #1d397c, #315fca 60%, #40a8bd);
+}
+
+.hero {
+    max-width: 1120px;
+    margin: auto;
+}
+
+.eyebrow {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: .8;
+    font-weight: 700;
+}
+
+header h1 {
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 1.12;
+    letter-spacing: -1.5px;
+    margin: 18px 0;
+}
+
+header p {
+    max-width: 760px;
+    color: #e5edff;
+    font-size: 17px;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 25px;
+}
+
+.tag {
+    border: 1px solid #ffffff55;
+    background: #ffffff20;
+    padding: 6px 13px;
+    border-radius: 30px;
+    font-size: 12px;
+}
+
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #ffffffed;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+
+.nav-inner {
+    max-width: 1120px;
+    margin: auto;
+    display: flex;
+    padding: 0 16px;
+}
+
+nav a {
+    white-space: nowrap;
+    text-decoration: none;
+    color: #596983;
+    padding: 15px 13px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+nav a:hover {
+    color: var(--blue);
+}
+
+main {
+    max-width: 1120px;
+    margin: 35px auto;
+    padding: 0 18px;
+}
+
+section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: clamp(20px, 4vw, 36px);
+    margin-bottom: 26px;
+    box-shadow: var(--shadow);
+    scroll-margin-top: 75px;
+}
+
+.section-heading {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.number {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 13px;
+    background: #eaf0ff;
+    color: var(--blue);
+    font-weight: 800;
+}
+
+h2 {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.3;
+}
+
+h3 {
+    color: #3159a4;
+    margin-top: 25px;
+}
+
+h4 {
+    margin: 12px 0 6px;
+}
+
+.subtitle {
+    color: var(--muted);
+    margin: 3px 0 0;
+    font-size: 13px;
+}
+
+p {
+    color: #53627a;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 15px;
+}
+
+.grid.three {
+    grid-template-columns: repeat(3, minmax(0,1fr));
+}
+
+.card {
+    background: #f8faff;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 18px;
+}
+
+.card h3 {
+    margin-top: 0;
+}
+
+.formula {
+    background: #eff4ff;
+    border-left: 4px solid var(--blue);
+    border-radius: 9px;
+    padding: 14px 17px;
+    margin: 13px 0;
+    color: #29477d;
+    font-family: Georgia, serif;
+    font-size: 17px;
+    overflow-x: auto;
+}
+
+.formula.center {
+    text-align: center;
+    font-size: 20px;
+}
+
+.callout {
+    padding: 16px 18px;
+    border-radius: 11px;
+    background: #eef9f5;
+    border: 1px solid #d6eee5;
+    color: #326b59;
+    margin: 17px 0;
+}
+
+.warning {
+    background: #fff8ed;
+    border: 1px solid #f5e5ca;
+    color: #805c2e;
+    padding: 15px;
+    border-radius: 11px;
+    margin: 15px 0;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 12px;
+    margin: 17px 0;
+}
+
+.field {
+    flex: 1;
+    min-width: 140px;
+}
+
+label {
+    display: block;
+    color: #596984;
+    font-size: 12px;
+    font-weight: 750;
+    margin-bottom: 6px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px 11px;
+    border: 1px solid #d6dfed;
+    border-radius: 9px;
+    background: white;
+    color: var(--ink);
+    font-size: 14px;
+}
+
+button {
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 9px;
+    padding: 11px 17px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 750;
+    transition: .2s;
+}
+
+button:hover {
+    background: #244a9f;
+    transform: translateY(-1px);
+}
+
+button.secondary {
+    background: #eaf0ff;
+    color: #3159a4;
+}
+
+button.secondary:hover {
+    background: #dce7ff;
+}
+
+.result {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #f8faff;
+    margin: 14px 0;
+    overflow-x: auto;
+}
+
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 10px;
+    margin: 14px 0;
+}
+
+.kpi {
+    background: #f7f9fd;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 13px;
+    min-width: 0;
+}
+
+.kpi small {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.kpi strong {
+    color: var(--blue);
+    font-size: 19px;
+    overflow-wrap: anywhere;
+}
+
+canvas {
+    width: 100%;
+    height: 290px;
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fbfcff;
+    margin: 12px 0;
+}
+
+pre {
+    background: #17263f;
+    color: #e5edff;
+    border-radius: 12px;
+    padding: 19px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 12px 0;
+}
+
+th, td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    background: #f0f4fb;
+    color: #566680;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.badge {
+    display: inline-block;
+    background: #eaf0ff;
+    color: #3159a4;
+    border-radius: 30px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+footer {
+    text-align: center;
+    color: #8491a5;
+    padding: 28px;
+    font-size: 12px;
+}
+
+@media(max-width:720px) {
+    .grid, .grid.three {
+        grid-template-columns: 1fr;
+    }
+
+    .kpis {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    section {
+        border-radius: 14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="hero">
+    <div class="eyebrow">HW5</div>
+
+    <h1>Integration &<br>Numerical Probability</h1>
+
+    <p>
+        An interactive exploration of Riemann and Lebesgue integration,
+        pathological functions, numerical convergence, and efficient
+        computation of the standard normal cumulative distribution function.
+    </p>
+
+    <div class="tags">
+        <span class="tag">Riemann Integration</span>
+        <span class="tag">Lebesgue Integration</span>
+        <span class="tag">Numerical Methods</span>
+        <span class="tag">Normal CDF</span>
+        <span class="tag">Error Analysis</span>
+    </div>
+</div>
+</header>
+
+<nav>
+<div class="nav-inner">
+    <a href="#overview">Overview</a>
+    <a href="#theory">Integration Theory</a>
+    <a href="#exercise1">Exercise 1</a>
+    <a href="#pathological">Pathological Functions</a>
+    <a href="#exercise2">Exercise 2</a>
+    <a href="#liouville">Liouville's Theorem</a>
+    <a href="#conclusion">Conclusion</a>
+</div>
+</nav>
+
+<main>
+
+<!-- OVERVIEW -->
+
+<section id="overview">
+<div class="section-heading">
+    <div class="number">00</div>
+    <div>
+        <h2>Project Overview</h2>
+        <p class="subtitle">Objectives and numerical methods</p>
+    </div>
+</div>
+
+<div class="grid three">
+    <div class="card">
+        <h3>Exercise 1</h3>
+        <p>
+            Approximate integrals using partitions of the domain
+            and partitions of the range.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Exercise 2</h3>
+        <p>
+            Compute the standard normal CDF using numerical integration,
+            series expansions and error-function approximations.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Comparison</h3>
+        <p>
+            Evaluate accuracy, convergence and computational
+            efficiency of different numerical approaches.
+        </p>
+    </div>
+</div>
+
+
+</section>
+
+
+<!-- THEORY -->
+
+<section id="theory">
+<div class="section-heading">
+    <div class="number">01</div>
+    <div>
+        <h2>Riemann and Lebesgue Integration</h2>
+        <p class="subtitle">Two perspectives on the integral</p>
+    </div>
+</div>
+
+<h3>Riemann Integration</h3>
+
+<p>
+The Riemann approach partitions the domain into small intervals.
+The function is evaluated at selected points, and the resulting
+rectangles approximate the area under the curve.
+</p>
+
+<div class="formula center">
+    ∫ₐᵇ f(x) dx ≈ Σᵢ f(xᵢ*) Δxᵢ
+</div>
+
+<p>
+For equally spaced subdivisions, the midpoint approximation is:
+</p>
+
+<div class="formula">
+    Rₙ = (b − a)/n · Σᵢ₌₀ⁿ⁻¹ f(a + (i + 1/2)(b − a)/n)
+</div>
+
+<h3>Lebesgue Integration</h3>
+
+<p>
+The Lebesgue perspective partitions the range of function values
+instead of partitioning the domain. For each range interval,
+we measure the set of points whose function values belong to it.
+</p>
+
+<div class="formula center">
+    ∫ f dμ ≈ Σⱼ yⱼ · μ({x : f(x) belongs to range bin j})
+</div>
+
+<p>
+For a finite range partition, the integral is approximated by
+multiplying each representative function value by the measure
+of its preimage.
+</p>
+
+<div class="grid">
+    <div class="card">
+        <h3>Domain Partition</h3>
+        <p>
+            Divide the x-axis into subintervals and evaluate
+            the function at representative points.
+        </p>
+        <span class="badge">Riemann perspective</span>
+    </div>
+
+    <div class="card">
+        <h3>Range Partition</h3>
+        <p>
+            Divide possible function values into bins and estimate
+            the measure of each preimage.
+        </p>
+        <span class="badge">Lebesgue-inspired perspective</span>
+    </div>
+</div>
+
+<div class="warning">
+    The range-binning algorithm below is a numerical approximation
+    based on sampled preimage measures. It is not a general exact
+    implementation of abstract Lebesgue measure.
+</div>
+</section>
+
+
+<!-- EXERCISE 1 -->
+
+<section id="exercise1">
+<div class="section-heading">
+    <div class="number">02</div>
+    <div>
+        <h2>Exercise 1 — Numerical Integration</h2>
+        <p class="subtitle">Compare Riemann and Lebesgue-inspired algorithms</p>
+    </div>
+</div>
+
+<h3>1. Choose a Function</h3>
+
+<div class="controls">
+    <div class="field">
+        <label>Function</label>
+        <select id="functionSelect">
+            <option value="sin">sin(x) on [0, π]</option>
+            <option value="square">x² on [0, 1]</option>
+            <option value="step">Step: 1 then 3 on [0, 1]</option>
+            <option value="absolute">|x − 0.5| on [0, 1]</option>
+            <option value="inverse">1 / √x on (0, 1]</option>
+            <option value="stepzero">Step: 1 then 0 on [0, 1]</option>
+            <option value="sinc">sin(x) / x on [0, π]</option>
+            <option value="dirichlet">Dirichlet function on [0, 1]</option>
+            <option value="thomae">Thomae function on [0, 1]</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label>Number of subdivisions</label>
+        <input id="subdivisions" type="number" value="1000" min="10" max="100000">
+    </div>
+
+    <div class="field">
+        <label>Number of range bins</label>
+        <input id="rangeBins" type="number" value="100" min="5" max="1000">
+    </div>
+
+    <button onclick="runIntegration()">Calculate Integrals</button>
+</div>
+
+<div id="functionInfo" class="callout">
+    Select a function to see its definition and theoretical integral.
+</div>
+
+<h3>2. Numerical Results</h3>
+
+<div id="integrationResults" class="result">
+    Run the calculation to display the results.
+</div>
+
+<div class="grid">
+    <div>
+        <h4>Function Graph</h4>
+        <canvas id="functionChart" width="700" height="300"></canvas>
+    </div>
+
+    <div>
+        <h4>Numerical Method Comparison</h4>
+        <canvas id="comparisonChart" width="700" height="300"></canvas>
+    </div>
+</div>
+
+<h3>3. Convergence Experiment</h3>
+
+<p>
+The following experiment evaluates how the numerical approximations
+change as the number of subdivisions increases.
+</p>
+
+<div class="controls">
+    <div class="field">
+        <label>Maximum subdivisions</label>
+        <select id="maxConvergence">
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000" selected>1000</option>
+            <option value="5000">5000</option>
+        </select>
+    </div>
+
+    <button onclick="runConvergence()">Run Convergence Test</button>
+</div>
+
+<div id="convergenceResult" class="result">
+    Convergence results will appear here.
+</div>
+
+<canvas id="convergenceChart" width="900" height="320"></canvas>
+
+<h3>4. Accuracy and Efficiency</h3>
+
+<div class="grid">
+    <div class="card">
+        <h3>Accuracy</h3>
+        <p>
+            The absolute error is the distance between the numerical
+            approximation and the theoretical integral.
+        </p>
+        <div class="formula">Error = |Iₙ − I|</div>
+    </div>
+
+    <div class="card">
+        <h3>Computational Efficiency</h3>
+        <p>
+            Execution time depends on the number of function evaluations,
+            range bins and the cost of calculating preimage measures.
+        </p>
+    </div>
+</div>
+</section>
+
+
+<!-- PATHOLOGICAL FUNCTIONS -->
+
+<section id="pathological">
+<div class="section-heading">
+    <div class="number">03</div>
+    <div>
+        <h2>Pathological Functions</h2>
+        <p class="subtitle">Examples where Riemann and Lebesgue theory differ</p>
+    </div>
+</div>
+
+<h3>Dirichlet Function</h3>
+
+<div class="formula center">
+    f(x) = 1 if x is rational; 0 if x is irrational
+</div>
+
+<p>
+Every interval contains both rational and irrational numbers.
+Consequently, the Dirichlet function is discontinuous everywhere
+and is not Riemann-integrable.
+</p>
+
+<p>
+However, the rational numbers have Lebesgue measure zero.
+The function is therefore Lebesgue-integrable, and its integral is zero.
+</p>
+
+<div class="callout">
+    <strong>Theoretical Lebesgue integral:</strong> 0.
+    A numerical grid containing only rational sample points may
+    misleadingly produce an average of 1. This illustrates why
+    naive point sampling cannot determine the Lebesgue integral
+    of this pathological function.
+</div>
+
+<h3>Thomae's Function</h3>
+
+<div class="formula center">
+    f(p/q) = 1/q for reduced rational p/q; f(x) = 0 for irrational x
+</div>
+
+<p>
+Thomae's function is continuous at every irrational point and
+discontinuous at every rational point. It is Riemann-integrable
+on [0, 1], with integral zero.
+</p>
+
+<p>
+The function also has Lebesgue integral zero. Rational values with
+small denominators occur at only finitely many points for each
+fixed denominator bound, while all remaining function values
+can be made arbitrarily small.
+</p>
+
+<h3>Numerical Demonstration</h3>
+
+<div class="controls">
+    <div class="field">
+        <label>Number of sample points</label>
+        <input id="pathN" type="number" value="1000" min="10" max="100000">
+    </div>
+
+    <button onclick="runPathological()">Run Pathological Test</button>
+</div>
+
+<div id="pathResult" class="result">
+    Run the test to compare sampled averages with theoretical integrals.
+</div>
+
+<div class="warning">
+    A floating-point number cannot reliably tell whether an arbitrary
+    real number is rational. In this demonstration, the grid points
+    are explicitly constructed as rational numbers. The result is
+    a demonstration of sampling bias, not a general numerical
+    integration algorithm for the Dirichlet function.
+</div>
+</section>
+
+
+<!-- EXERCISE 2 -->
+
+<section id="exercise2">
+<div class="section-heading">
+    <div class="number">04</div>
+    <div>
+        <h2>Exercise 2 — Numerical Computation of the Normal CDF</h2>
+        <p class="subtitle">Efficient algorithms for the standard normal distribution</p>
+    </div>
+</div>
+
+<h3>1. Definition of the Normal CDF</h3>
+
+<p>
+The standard normal probability density function is:
+</p>
+
+<div class="formula center">
+    φ(x) = (1 / √(2π)) exp(−x² / 2)
+</div>
+
+<p>
+Its cumulative distribution function is:
+</p>
+
+<div class="formula center">
+    Φ(x) = ∫₋∞ˣ (1 / √(2π)) exp(−t² / 2) dt
+</div>
+
+<p>
+There is no expression for this antiderivative using elementary
+functions. Nevertheless, it has an exact representation using
+the special error function.
+</p>
+
+<h3>2. Choose a Numerical Method</h3>
+
+<div class="controls">
+    <div class="field">
+        <label>Input x</label>
+        <input id="normalX" type="number" value="1.96" step="0.01">
+    </div>
+
+    <div class="field">
+        <label>Integration steps</label>
+        <input id="normalSteps" type="number" value="1000" min="20" max="100000">
+    </div>
+
+    <div class="field">
+        <label>Numerical method</label>
+        <select id="normalMethod">
+            <option value="simpson">Simpson's Rule</option>
+            <option value="trapezoid">Trapezoidal Rule</option>
+            <option value="series">Error Function Series</option>
+            <option value="approximation">Fast erf Approximation</option>
+        </select>
+    </div>
+
+    <button onclick="calculateNormal()">Calculate CDF</button>
+</div>
+
+<div id="normalResult" class="result">
+    Enter x and select a method to calculate Φ(x).
+</div>
+
+<h3>3. Compare All Numerical Methods</h3>
+
+<button class="secondary" onclick="compareNormalMethods()">
+    Compare Methods
+</button>
+
+<div id="normalComparison" class="result">
+    Click the button to compare the methods.
+</div>
+
+<canvas id="normalChart" width="900" height="300"></canvas>
+
+<h3>4. Reference Values</h3>
+
+<p>
+The following values are standard reference values for the
+standard normal CDF. They can be used to verify the numerical
+implementation.
+</p>
+
+<table>
+<thead>
+<tr>
+    <th>x</th>
+    <th>Reference Φ(x)</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>-3.00</td><td>0.0013498980316301</td></tr>
+<tr><td>-2.00</td><td>0.0227501319481792</td></tr>
+<tr><td>-1.00</td><td>0.1586552539314571</td></tr>
+<tr><td>-0.50</td><td>0.3085375387259869</td></tr>
+<tr><td>0.00</td><td>0.5000000000000000</td></tr>
+<tr><td>0.50</td><td>0.6914624612740131</td></tr>
+<tr><td>1.00</td><td>0.8413447460685429</td></tr>
+<tr><td>1.96</td><td>0.9750021048517795</td></tr>
+<tr><td>2.00</td><td>0.9772498680518208</td></tr>
+<tr><td>3.00</td><td>0.9986501019683699</td></tr>
+</tbody>
+</table>
+
+<p>
+Reference resource:
+<a href="https://dlmf.nist.gov/7" target="_blank" rel="noopener">
+NIST Digital Library of Mathematical Functions — Error Functions
+</a>.
+</p>
+</section>
+
+
+<!-- LIOUVILLE -->
+
+<section id="liouville">
+<div class="section-heading">
+    <div class="number">05</div>
+    <div>
+        <h2>Why the Normal CDF Is Not Elementary</h2>
+        <p class="subtitle">Liouville's theorem and special functions</p>
+    </div>
+</div>
+
+<h3>1. The Mathematical Problem</h3>
+
+<p>
+The normal CDF involves the integral of the exponential of
+a negative quadratic polynomial:
+</p>
+
+<div class="formula center">
+    ∫ exp(−x²/2) dx
+</div>
+
+<p>
+Unlike many elementary integrals, this expression cannot be
+written using a finite combination of elementary functions:
+polynomials, rational functions, exponentials, logarithms
+and trigonometric functions.
+</p>
+
+<h3>2. Liouville's Theorem</h3>
+
+<p>
+Liouville's theorem in differential algebra gives necessary
+conditions for an elementary antiderivative to exist.
+In simplified terms, an elementary antiderivative must be
+expressible through a finite combination of algebraic functions,
+exponentials, logarithms and derivatives of such functions.
+</p>
+
+<p>
+For the integrand exp(−x²), the required elementary
+antiderivative does not exist. This is a classical consequence
+of Liouville's theorem, often formulated through the
+Risch algorithm and differential algebra.
+</p>
+
+<div class="callout">
+    The result does not mean that the integral cannot be calculated.
+    It means that an elementary closed-form antiderivative is
+    unavailable. Special functions provide a natural exact notation.
+</div>
+
+<h3>3. The Error Function</h3>
+
+<p>
+The error function is defined as:
+</p>
+
+<div class="formula center">
+    erf(x) = (2 / √π) ∫₀ˣ exp(−t²) dt
+</div>
+
+<p>
+Using this special function, the standard normal CDF can be
+written exactly as:
+</p>
+
+<div class="formula center">
+    Φ(x) = 1/2 [1 + erf(x / √2)]
+</div>
+
+<p>
+This is an exact analytical representation, but practical
+computers still need numerical algorithms to evaluate erf.
+</p>
+
+<h3>4. Power Series Expansion</h3>
+
+<p>
+The error function has the convergent series:
+</p>
+
+<div class="formula">
+    erf(z) = (2 / √π) Σₙ₌₀∞ [(-1)ⁿ z²ⁿ⁺¹ / (n!(2n+1))]
+</div>
+
+<p>
+The series can be evaluated term by term. For large absolute
+values of z, however, convergence and cancellation may make
+other numerical methods more efficient.
+</p>
+
+<h3>5. Numerical Methods</h3>
+
+<div class="grid">
+    <div class="card">
+        <h3>Simpson's Rule</h3>
+        <p>
+            Approximates the integral using quadratic
+            interpolation. It is generally more accurate than
+            the trapezoidal rule for smooth functions.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Trapezoidal Rule</h3>
+        <p>
+            Approximates the area using trapezoids.
+            It is simple, stable and easy to implement.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Power Series</h3>
+        <p>
+            Evaluates the error function using its mathematical
+            series expansion. The number of terms controls
+            the approximation accuracy.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Fast Approximation</h3>
+        <p>
+            Uses a polynomial approximation to the error function.
+            It is computationally efficient but introduces
+            a small approximation error.
+        </p>
+    </div>
+</div>
+</section>
+
+
+<!-- CONCLUSION -->
+
+<section id="conclusion">
+<div class="section-heading">
+    <div class="number">06</div>
+    <div>
+        <h2>Conclusions</h2>
+        <p class="subtitle">Main observations from the experiments</p>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Riemann Integration</h3>
+        <p>
+            Domain partitioning works well for continuous
+            and piecewise continuous functions. Accuracy
+            improves as the partition becomes finer.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Lebesgue Integration</h3>
+        <p>
+            Range partitioning provides a different perspective
+            based on preimage measures. It is particularly useful
+            conceptually for understanding measurable functions.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Pathological Functions</h3>
+        <p>
+            Dirichlet's function is not Riemann-integrable but
+            is Lebesgue-integrable. Thomae's function is
+            integrable in both senses.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Normal CDF</h3>
+        <p>
+            Numerical integration and special-function
+            approximations provide practical ways to evaluate
+            the normal CDF despite the absence of an elementary
+            antiderivative.
+        </p>
+    </div>
+</div>
+
+<div class="callout">
+    <strong>Final observation:</strong>
+    For bounded Riemann-integrable functions, the Riemann and
+    Lebesgue integrals agree. The Lebesgue framework is more
+    general, while numerical methods make these mathematical
+    concepts computationally accessible.
+</div>
+</section>
+
+</main>
+
+
+
+<script>
+
+/* =====================================
+   GENERAL UTILITIES
+===================================== */
+
+const $ = id => document.getElementById(id);
+
+const fmt = (x, digits = 8) =>
+    Number.isFinite(x) ? x.toFixed(digits) : "—";
+
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+
+/* =====================================
+   EXERCISE 1: FUNCTIONS
+===================================== */
+
+const functions = {
+    sin: {
+        name: "sin(x)",
+        a: 0, b: Math.PI,
+        exact: 2,
+        formula: "f(x) = sin(x), x ∈ [0, π]",
+        f: x => Math.sin(x)
+    },
+
+    square: {
+        name: "x²",
+        a: 0, b: 1,
+        exact: 1/3,
+        formula: "f(x) = x², x ∈ [0, 1]",
+        f: x => x*x
+    },
+
+    step: {
+        name: "Step function",
+        a: 0, b: 1,
+        exact: 2,
+        formula: "f(x) = 1 for x < 0.5; 3 otherwise",
+        f: x => x < 0.5 ? 1 : 3
+    },
+
+    absolute: {
+        name: "Absolute value",
+        a: 0, b: 1,
+        exact: 0.25,
+        formula: "f(x) = |x − 0.5|",
+        f: x => Math.abs(x - 0.5)
+    },
+
+    inverse: {
+        name: "Inverse square root",
+        a: 0, b: 1,
+        exact: 2,
+        formula: "f(x) = 1/√x, x ∈ (0, 1]",
+        f: x => 1/Math.sqrt(x)
+    },
+
+    stepzero: {
+        name: "Step function",
+        a: 0, b: 1,
+        exact: 0.5,
+        formula: "f(x) = 1 for x < 0.5; 0 otherwise",
+        f: x => x < 0.5 ? 1 : 0
+    },
+
+    sinc: {
+        name: "Sinc function",
+        a: 0, b: Math.PI,
+        exact: 1.851937051982466,
+        formula: "f(x) = sin(x)/x, with f(0) = 1",
+        f: x => Math.abs(x) < 1e-12 ? 1 : Math.sin(x)/x
+    },
+
+    dirichlet: {
+        name: "Dirichlet function",
+        a: 0, b: 1,
+        exact: 0,
+        formula: "f(x) = 1 on rational x; 0 on irrational x",
+        f: x => 1
+    },
+
+    thomae: {
+        name: "Thomae function",
+        a: 0, b: 1,
+        exact: 0,
+        formula: "f(p/q) = 1/q for reduced rational p/q",
+        f: x => {
+            const denominator = 100000;
+            let p = Math.round(x * denominator);
+            let q = denominator;
+
+            function gcd(a,b) {
+                while (b !== 0) {
+                    const t = b;
+                    b = a % b;
+                    a = t;
+                }
+                return a;
+            }
+
+            const g = gcd(Math.abs(p), q);
+            return 1 / (q / g);
+        }
+    }
+};
+
+
+/* =====================================
+   RIEMANN METHODS
+===================================== */
+
+function midpointIntegral(f, a, b, n) {
+    const dx = (b-a)/n;
+    let sum = 0;
+
+    const start = performance.now();
+
+    for (let i=0; i<n; i++) {
+        const x = a + (i+0.5)*dx;
+        sum += f(x);
+    }
+
+    return {
+        value: sum*dx,
+        time: performance.now()-start
+    };
+}
+
+function trapezoidIntegral(f, a, b, n) {
+    const dx = (b-a)/n;
+
+    let sum = (f(a)+f(b))/2;
+
+    const start = performance.now();
+
+    for (let i=1; i<n; i++) {
+        sum += f(a+i*dx);
+    }
+
+    return {
+        value: sum*dx,
+        time: performance.now()-start
+    };
+}
+
+
+/* =====================================
+   LEBESGUE-INSPIRED RANGE BINNING
+
+   Estimate preimage measures by sampling
+   the domain and grouping values by range.
+===================================== */
+
+function lebesgueApprox(f, a, b, n, bins) {
+    const start = performance.now();
+
+    const dx = (b-a)/n;
+    const values = [];
+
+    let min = Infinity;
+    let max = -Infinity;
+
+    for (let i=0; i<n; i++) {
+        const x = a+(i+0.5)*dx;
+        const y = f(x);
+
+        values.push(y);
+
+        min = Math.min(min,y);
+        max = Math.max(max,y);
+    }
+
+    if (max === min) {
+        return {
+            value: min*(b-a),
+            time: performance.now()-start
+        };
+    }
+
+    const dy = (max-min)/bins;
+    const counts = new Array(bins).fill(0);
+
+    for (const y of values) {
+        let index = Math.floor((y-min)/dy);
+        index = clamp(index,0,bins-1);
+        counts[index]++;
+    }
+
+    let result = 0;
+
+    for (let j=0; j<bins; j++) {
+        const representative = min+(j+0.5)*dy;
+        const measure = counts[j]*dx;
+
+        result += representative*measure;
+    }
+
+    return {
+        value: result,
+        time: performance.now()-start
+    };
+}
+
+
+/* =====================================
+   FUNCTION PLOT
+===================================== */
+
+function drawFunction(f,a,b) {
+    const canvas = $("functionChart");
+    const ctx = canvas.getContext("2d");
+
+    const w=canvas.width;
+    const h=canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    const points=500;
+    let ys=[];
+
+    for(let i=0;i<=points;i++) {
+        const x=a+(b-a)*i/points;
+        const y=f(x);
+        ys.push(y);
+    }
+
+    let ymin=Math.min(...ys);
+    let ymax=Math.max(...ys);
+
+    if(ymin===ymax) {
+        ymin-=1;
+        ymax+=1;
+    }
+
+    const padding=30;
+
+    const mapX=x =>
+        padding+(x-a)/(b-a)*(w-2*padding);
+
+    const mapY=y =>
+        h-padding-(y-ymin)/(ymax-ymin)*(h-2*padding);
+
+    ctx.strokeStyle="#e5eaf3";
+    ctx.lineWidth=1;
+
+    for(let i=0;i<5;i++) {
+        const y=padding+i*(h-2*padding)/4;
+        ctx.beginPath();
+        ctx.moveTo(padding,y);
+        ctx.lineTo(w-padding,y);
+        ctx.stroke();
+    }
+
+    ctx.strokeStyle="#315fca";
+    ctx.lineWidth=2.5;
+    ctx.beginPath();
+
+    ys.forEach((y,i)=>{
+        const x=a+(b-a)*i/points;
+
+        if(i===0) ctx.moveTo(mapX(x),mapY(y));
+        else ctx.lineTo(mapX(x),mapY(y));
+    });
+
+    ctx.stroke();
+
+    ctx.fillStyle="#63718a";
+    ctx.font="12px Arial";
+
+    ctx.fillText(fmt(a,2),padding,h-8);
+    ctx.fillText(fmt(b,2),w-padding-25,h-8);
+}
+
+
+/* =====================================
+   COMPARISON BAR CHART
+===================================== */
+
+function drawComparison(values) {
+    const canvas=$("comparisonChart");
+    const ctx=canvas.getContext("2d");
+
+    const w=canvas.width;
+    const h=canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    const colors=["#386bd4","#36a58b","#d58a42"];
+    const labels=["Midpoint","Trapezoid","Range bins"];
+
+    const max=Math.max(1,...values.map(x=>Math.abs(x)));
+    const barWidth=95;
+    const gap=65;
+
+    values.forEach((value,i)=>{
+        const x=65+i*(barWidth+gap);
+        const barHeight=Math.abs(value)/max*(h-90);
+
+        ctx.fillStyle=colors[i];
+
+        ctx.fillRect(
+            x,
+            h-45-barHeight,
+            barWidth,
+            barHeight
+        );
+
+        ctx.fillStyle="#40516c";
+        ctx.font="13px Arial";
+
+        ctx.fillText(labels[i],x-5,h-20);
+        ctx.fillText(fmt(value,5),x-4,h-45-barHeight-8);
+    });
+}
+
+
+/* =====================================
+   RUN INTEGRATION
+===================================== */
+
+function runIntegration() {
+    const key=$("functionSelect").value;
+    const n=Number($("subdivisions").value);
+    const bins=Number($("rangeBins").value);
+
+    if(!Number.isInteger(n)||n<10||n>100000||
+       !Number.isInteger(bins)||bins<5||bins>1000) {
+        $("integrationResults").textContent=
+            "Please use 10–100,000 subdivisions and 5–1,000 range bins.";
+        return;
+    }
+
+    const obj=functions[key];
+
+    const midpoint=midpointIntegral(obj.f,obj.a,obj.b,n);
+    const trapezoid=trapezoidIntegral(obj.f,obj.a,obj.b,n);
+    const lebesgue=lebesgueApprox(obj.f,obj.a,obj.b,n,bins);
+
+    const exact=obj.exact;
+
+    const dirichletWarning=key==="dirichlet";
+
+    $("functionInfo").innerHTML=`
+        <strong>${obj.name}</strong><br>
+        ${obj.formula}<br>
+        Theoretical integral:
+        <strong>${exact}</strong>
+        ${dirichletWarning ?
+        "<br>Warning: the sampled grid is rational, so the naive numerical result is not the Lebesgue integral." : ""}
+    `;
+
+    $("integrationResults").innerHTML=`
+        <table>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Approximation</th>
+                    <th>Absolute Error</th>
+                    <th>Time (ms)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Midpoint Riemann</td>
+                    <td>${fmt(midpoint.value,9)}</td>
+                    <td>${fmt(Math.abs(midpoint.value-exact),9)}</td>
+                    <td>${fmt(midpoint.time,4)}</td>
+                </tr>
+                <tr>
+                    <td>Trapezoidal Riemann</td>
+                    <td>${fmt(trapezoid.value,9)}</td>
+                    <td>${fmt(Math.abs(trapezoid.value-exact),9)}</td>
+                    <td>${fmt(trapezoid.time,4)}</td>
+                </tr>
+                <tr>
+                    <td>Lebesgue-inspired</td>
+                    <td>${fmt(lebesgue.value,9)}</td>
+                    <td>${fmt(Math.abs(lebesgue.value-exact),9)}</td>
+                    <td>${fmt(lebesgue.time,4)}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="kpis">
+            <div class="kpi">
+                <small>Theoretical Integral</small>
+                <strong>${fmt(exact,6)}</strong>
+            </div>
+            <div class="kpi">
+                <small>Midpoint Error</small>
+                <strong>${fmt(Math.abs(midpoint.value-exact),6)}</strong>
+            </div>
+            <div class="kpi">
+                <small>Trapezoid Error</small>
+                <strong>${fmt(Math.abs(trapezoid.value-exact),6)}</strong>
+            </div>
+            <div class="kpi">
+                <small>Range-Bin Error</small>
+                <strong>${fmt(Math.abs(lebesgue.value-exact),6)}</strong>
+            </div>
+        </div>
+    `;
+
+    drawFunction(obj.f,obj.a,obj.b);
+
+    drawComparison([
+        midpoint.value,
+        trapezoid.value,
+        lebesgue.value
+    ]);
+}
+
+
+/* =====================================
+   CONVERGENCE TEST
+===================================== */
+
+function runConvergence() {
+    const key=$("functionSelect").value;
+    const max=Number($("maxConvergence").value);
+    const obj=functions[key];
+
+    const sizes=[
+        10,
+        Math.floor(max/10),
+        Math.floor(max/5),
+        Math.floor(max/2),
+        max
+    ].filter((v,i,a)=>v>=2&&a.indexOf(v)===i);
+
+    let rows=[];
+
+    const errors=[];
+
+    for(const n of sizes) {
+        const r=midpointIntegral(
+            obj.f,obj.a,obj.b,n
+        );
+
+        const error=Math.abs(r.value-obj.exact);
+
+        errors.push(error);
+
+        rows.push(`
+            <tr>
+                <td>${n}</td>
+                <td>${fmt(r.value,9)}</td>
+                <td>${fmt(error,9)}</td>
+            </tr>
+        `);
+    }
+
+    $("convergenceResult").innerHTML=`
+        <table>
+            <thead>
+                <tr>
+                    <th>Subdivisions</th>
+                    <th>Midpoint Approximation</th>
+                    <th>Absolute Error</th>
+                </tr>
+            </thead>
+            <tbody>${rows.join("")}</tbody>
+        </table>
+    `;
+
+    const canvas=$("convergenceChart");
+    const ctx=canvas.getContext("2d");
+
+    const w=canvas.width;
+    const h=canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    const positive=errors.map(e=>Math.max(e,1e-16));
+    const maxE=Math.max(...positive);
+    const minE=Math.min(...positive);
+
+    const logMax=Math.log10(maxE);
+    const logMin=Math.log10(minE);
+
+    ctx.strokeStyle="#e5eaf3";
+
+    for(let i=0;i<5;i++) {
+        const y=30+i*(h-65)/4;
+        ctx.beginPath();
+        ctx.moveTo(55,y);
+        ctx.lineTo(w-20,y);
+        ctx.stroke();
+    }
+
+    ctx.strokeStyle="#315fca";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+
+    positive.forEach((e,i)=>{
+        const x=55+i*(w-85)/Math.max(1,positive.length-1);
+        const y=30+(logMax-Math.log10(e))/Math.max(1e-12,logMax-logMin)*(h-65);
+
+        if(i===0)ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+    });
+
+    ctx.stroke();
+
+    ctx.fillStyle="#64748b";
+    ctx.font="12px Arial";
+    ctx.fillText("Increasing subdivisions →",w/2-65,h-8);
+}
+
+
+/* =====================================
+   PATHOLOGICAL FUNCTIONS
+===================================== */
+
+function runPathological() {
+    const n=Number($("pathN").value);
+
+    if(!Number.isInteger(n)||n<10||n>100000) {
+        $("pathResult").textContent=
+            "Please choose between 10 and 100,000 points.";
+        return;
+    }
+
+    let dirichletSum=0;
+    let thomaeSum=0;
+
+    for(let i=0;i<n;i++) {
+        const p=i;
+        const q=n;
+
+        // Every grid point p/n is rational.
+        dirichletSum+=1;
+
+        function gcd(a,b) {
+            while(b!==0) {
+                const t=b;
+                b=a%b;
+                a=t;
+            }
+            return a;
+        }
+
+        const g=gcd(p,q);
+        thomaeSum+=1/(q/g);
+    }
+
+    const dirichletAverage=dirichletSum/n;
+    const thomaeAverage=thomaeSum/n;
+
+    $("pathResult").innerHTML=`
+        <div class="kpis">
+            <div class="kpi">
+                <small>Grid points</small>
+                <strong>${n}</strong>
+            </div>
+            <div class="kpi">
+                <small>Dirichlet sampled average</small>
+                <strong>${fmt(dirichletAverage)}</strong>
+            </div>
+            <div class="kpi">
+                <small>Dirichlet Lebesgue integral</small>
+                <strong>0</strong>
+            </div>
+            <div class="kpi">
+                <small>Thomae sampled average</small>
+                <strong>${fmt(thomaeAverage)}</strong>
+            </div>
+        </div>
+
+        <p>
+            The sampled Dirichlet average is 1 because every point
+            on this rational grid is rational. Its actual Lebesgue
+            integral is 0.
+        </p>
+
+        <p>
+            The Thomae sample average is an approximation of its
+            integral, which is also 0. Increasing the sample size
+            generally reduces the contribution of points with
+            small denominators.
+        </p>
+    `;
+}
+
+
+/* =====================================
+   NORMAL DISTRIBUTION
+===================================== */
+
+const SQRT2=Math.sqrt(2);
+const SQRT_PI=Math.sqrt(Math.PI);
+const INV_SQRT_2PI=1/Math.sqrt(2*Math.PI);
+
+
+/* Simpson's rule */
+
+function simpsonIntegral(f,a,b,n) {
+    if(n%2!==0)n++;
+
+    const h=(b-a)/n;
+
+    let sum=f(a)+f(b);
+
+    for(let i=1;i<n;i++) {
+        sum+=(i%2===0?2:4)*f(a+i*h);
+    }
+
+    return sum*h/3;
+}
+
+
+/* Trapezoidal rule */
+
+function trapezoidNormal(f,a,b,n) {
+    const h=(b-a)/n;
+
+    let sum=(f(a)+f(b))/2;
+
+    for(let i=1;i<n;i++) {
+        sum+=f(a+i*h);
+    }
+
+    return sum*h;
+}
+
+
+/* Standard normal density */
+
+function normalPDF(x) {
+    return INV_SQRT_2PI*Math.exp(-x*x/2);
+}
+
+
+/* Numerical integration using symmetry */
+
+function normalIntegration(x,n,method) {
+    if(x===0)return 0.5;
+
+    const sign=x>0?1:-1;
+    const upper=Math.abs(x);
+
+    const f=normalPDF;
+
+    const integral=method==="simpson"
+        ?simpsonIntegral(f,0,upper,n)
+        :trapezoidNormal(f,0,upper,n);
+
+    return 0.5+sign*integral;
+}
+
+
+/* Error function power series */
+
+function erfSeries(z) {
+    const sign=z<0?-1:1;
+    z=Math.abs(z);
+
+    if(z===0)return 0;
+
+    let term=z;
+    let sum=term;
+
+    for(let n=1;n<10000;n++) {
+        term *= -z*z/n;
+
+        const addition=term/(2*n+1);
+        sum+=addition;
+
+        if(Math.abs(addition)<1e-16)break;
+    }
+
+    return sign*2/SQRT_PI*sum;
+}
+
+
+/* Fast error function approximation */
+
+function erfApprox(z) {
+    const sign=z<0?-1:1;
+    z=Math.abs(z);
+
+    const p=0.3275911;
+
+    const a1=0.254829592;
+    const a2=-0.284496736;
+    const a3=1.421413741;
+    const a4=-1.453152027;
+    const a5=1.061405429;
+
+    const t=1/(1+p*z);
+
+    const y=1-(
+        (((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t
+    )*Math.exp(-z*z);
+
+    return sign*y;
+}
+
+
+/* Convert erf to normal CDF */
+
+function normalSeries(x) {
+    return 0.5*(1+erfSeries(x/SQRT2));
+}
+
+function normalApproximation(x) {
+    return 0.5*(1+erfApprox(x/SQRT2));
+}
+
+
+/* =====================================
+   NORMAL CDF CALCULATION
+===================================== */
+
+function normalReferenceValues() {
+    return [
+        [-3,0.0013498980316301],
+        [-2,0.0227501319481792],
+        [-1,0.1586552539314571],
+        [-0.5,0.3085375387259869],
+        [0,0.5],
+        [0.5,0.6914624612740131],
+        [1,0.8413447460685429],
+        [1.96,0.9750021048517795],
+        [2,0.9772498680518208],
+        [3,0.9986501019683699]
+    ];
+}
+
+function getNormalMethod(method,x,n) {
+    switch(method) {
+        case "simpson":
+            return normalIntegration(x,n,"simpson");
+
+        case "trapezoid":
+            return normalIntegration(x,n,"trapezoid");
+
+        case "series":
+            return normalSeries(x);
+
+        case "approximation":
+            return normalApproximation(x);
+    }
+}
+
+function calculateNormal() {
+    const x=Number($("normalX").value);
+    const n=Number($("normalSteps").value);
+    const method=$("normalMethod").value;
+
+    if(!Number.isFinite(x)||Math.abs(x)>10||
+       !Number.isInteger(n)||n<20||n>100000) {
+        $("normalResult").textContent=
+            "Enter a finite x between -10 and 10, and 20–100,000 steps.";
+        return;
+    }
+
+    const start=performance.now();
+
+    const value=getNormalMethod(method,x,n);
+
+    const elapsed=performance.now()-start;
+
+    const ref=normalReferenceValues().find(
+        row=>Math.abs(row[0]-x)<1e-12
+    );
+
+    const reference=ref?ref[1]:normalSeries(x);
+
+    $("normalResult").innerHTML=`
+        <div class="kpis">
+            <div class="kpi">
+                <small>Input x</small>
+                <strong>${x}</strong>
+            </div>
+
+            <div class="kpi">
+                <small>Calculated Φ(x)</small>
+                <strong>${fmt(value,12)}</strong>
+            </div>
+
+            <div class="kpi">
+                <small>Reference Value</small>
+                <strong>${fmt(reference,12)}</strong>
+            </div>
+
+            <div class="kpi">
+                <small>Execution Time</small>
+                <strong>${fmt(elapsed,4)} ms</strong>
+            </div>
+        </div>
+
+        <p>
+            Absolute difference from reference:
+            <strong>${fmt(Math.abs(value-reference),12)}</strong>
+        </p>
+
+        <p>
+            Method:
+            <strong>${method}</strong>
+        </p>
+    `;
+}
+
+
+/* =====================================
+   COMPARE NORMAL METHODS
+===================================== */
+
+function compareNormalMethods() {
+    const x=Number($("normalX").value);
+    const n=Number($("normalSteps").value);
+
+    if(!Number.isFinite(x)||Math.abs(x)>10||
+       !Number.isInteger(n)||n<20||n>100000) {
+        $("normalComparison").textContent=
+            "Please enter valid x and integration steps.";
+        return;
+    }
+
+    const methods=[
+        ["Simpson's Rule","simpson"],
+        ["Trapezoidal Rule","trapezoid"],
+        ["Error Function Series","series"],
+        ["Fast erf Approximation","approximation"]
+    ];
+
+    const results=[];
+
+    for(const [name,key] of methods) {
+        const start=performance.now();
+
+        const value=getNormalMethod(key,x,n);
+
+        const time=performance.now()-start;
+
+        results.push({
+            name,
+            value,
+            time
+        });
+    }
+
+    const reference=normalSeries(x);
+
+    const rows=results.map(r=>`
+        <tr>
+            <td>${r.name}</td>
+            <td>${fmt(r.value,12)}</td>
+            <td>${fmt(Math.abs(r.value-reference),12)}</td>
+            <td>${fmt(r.time,5)}</td>
+        </tr>
+    `).join("");
+
+    $("normalComparison").innerHTML=`
+        <p>
+            Input x = <strong>${x}</strong>.
+            The error is calculated relative to the high-precision
+            series result used as the internal reference.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Calculated CDF</th>
+                    <th>Absolute Difference</th>
+                    <th>Time (ms)</th>
+                </tr>
+            </thead>
+
+            <tbody>${rows}</tbody>
+        </table>
+    `;
+
+    const canvas=$("normalChart");
+    const ctx=canvas.getContext("2d");
+
+    const w=canvas.width;
+    const h=canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    const colors=[
+        "#315fca",
+        "#36a58b",
+        "#d58a42",
+        "#9265c9"
+    ];
+
+    const max=Math.max(
+        1e-12,
+        ...results.map(r=>r.time)
+    );
+
+    results.forEach((r,i)=>{
+        const xPos=45+i*215;
+        const barHeight=r.time/max*(h-95);
+
+        ctx.fillStyle=colors[i];
+
+        ctx.fillRect(
+            xPos,
+            h-45-barHeight,
+            105,
+            barHeight
+        );
+
+        ctx.fillStyle="#455570";
+        ctx.font="12px Arial";
+
+        ctx.fillText(
+            r.name.split(" ")[0],
+            xPos,
+            h-20
+        );
+
+        ctx.fillText(
+            fmt(r.time,4)+" ms",
+            xPos,
+            h-52-barHeight
+        );
+    });
+}
+
+
+/* =====================================
+   INITIAL DISPLAY
+===================================== */
+
+runIntegration();
+runPathological();
+
+calculateNormal();
+
+</script>
+
+</body>
+</html>
